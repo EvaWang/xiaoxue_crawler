@@ -13,6 +13,7 @@ https://xiaoxue.iis.sinica.edu.tw/xiaozhuan?kaiOrder=1
 ## 爬蟲參數
 - font: 字型, ex: xiaozhuan
 - limit: 收錄字數
+- size: 圖片大小(pixel)
 - save_path: 存檔路徑的root folder
 - root_url: 小學堂資料庫網頁的root，抓圖會用到
 - target_url: 目標資料庫網址，ex: https://xiaoxue.iis.sinica.edu.tw/xiaozhuan?kaiOrder=%d。 `kaiOrder`參數填入`%d`，讓程式碼可以動態塞入參數。

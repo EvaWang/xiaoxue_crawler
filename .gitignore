@@ -103,7 +103,7 @@ celerybeat.pid
 
 
 # 字庫
-xiaozhuan
+xiaozhuan*
 chromedriver_linux64.zip
 chromedriver
 .vscode/settings.json

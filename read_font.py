@@ -1,20 +1,19 @@
-from time import sleep
-from crawler import *
-from urllib.parse import urlparse
-import sys, traceback
-import random
+import time
+from urllib.parse import urlparse, parse_qs, urlsplit
 import argparse
-import json
 
 from selenium import webdriver 
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys 
+
+from crawler import *
 
 # initiating the webdriver. Parameter includes the path of the webdriver. 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
+
 
 def get_xiaozhuan_list_url(driver, args, folder_path, kaiOrder):
 
@@ -33,12 +32,19 @@ def get_xiaozhuan_list_url(driver, args, folder_path, kaiOrder):
 
     img_count = 0
     imgList = []
+
     char_variant_list = soup.find_all('img', class_ = 'charValue')
     for char_variant in char_variant_list:
         if char_variant.parent.get('class', None) is None:
-            img_url = char_variant.get('src', None)
+            img_url = char_variant.get('src','')
+            url_split = urlsplit(img_url)
+            url_query_parse = url_split.query.split('&')
+            url_query = [ param for param in url_query_parse if param.startswith('size=')==False]
+            url_query.append("{}={}".format('size', args.size))
+
+            save_from_url(args.root_url+url_split.path+"?"+"&".join(url_query), os.path.join(folder_path, "%s_%s.png"%(kaiOrder, img_count)))
             imgList.append({'img_id': img_count, 'desc': "楷書字型"})
-            save_from_url(args.root_url+img_url, os.path.join(folder_path, "%s_%s.png"%(kaiOrder, img_count)))
+
             img_count = img_count+1
 
     char_list = soup.find_all('td', class_ = 'VariantListA')
@@ -46,8 +52,14 @@ def get_xiaozhuan_list_url(driver, args, folder_path, kaiOrder):
         img = char.img
         if img:
             img_url = img.get('src', None)
+            url_split = urlsplit(img_url)
+            url_query_parse = url_split.query.split('&')
+            url_query = [ param for param in url_query_parse if param.startswith('size=')==False]
+            url_query.append("{}={}".format('size', args.size))
+
             imgList.append({'img_id': img_count, 'desc': char.text})
-            save_from_url(args.root_url+img_url, os.path.join(folder_path, "%s_%s.png"%(kaiOrder, img_count)))
+            save_from_url(args.root_url+url_split.path+"?"+"&".join(url_query), os.path.join(folder_path, "%s_%s.png"%(kaiOrder, img_count)))
+
             img_count = img_count+1
 
     # json格式: {id: #kaiOrder, imgList:[{img_id: #img_id, desc: #出處}]
@@ -62,6 +74,7 @@ def _parse_args():
 
     parser.add_argument('-f','--font', type=str, required=False, help='font', default='xiaozhuan')
     parser.add_argument('-l','--limit', type=int, required=False, help='limit', default=11101)
+    parser.add_argument('-s','--size', type=int, required=False, help='size', default=64)
     parser.add_argument('-p','--save_path', type=str, required=False, help='save_path', default='./')
     parser.add_argument('-r','--root_url', type=str, required=False, help='root_url', default='https://xiaoxue.iis.sinica.edu.tw/')
     parser.add_argument('-u','--target_url', type=str, required=False, help='target_url', default='https://xiaoxue.iis.sinica.edu.tw/xiaozhuan?kaiOrder=%d')

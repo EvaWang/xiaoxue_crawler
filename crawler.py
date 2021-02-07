@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # import libraries
-import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import json
 import time
 import os
 import datetime
-import urllib.request
 import argparse
+
+import urllib.request
+from urllib.parse import urlparse
+
 
 
 
