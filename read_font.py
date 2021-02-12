@@ -15,12 +15,12 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
 
-def get_xiaozhuan_list_url(driver, args, folder_path, kaiOrder):
+def get_xiaozhuan_img(driver, args, folder_path, kaiOrder):
 
     url = args.target_url%(kaiOrder)
     
     driver.get(url)  
-    time.sleep(3)  
+    time.sleep(3)
 
     html = driver.page_source 
     soup = BeautifulSoup(html, "html.parser")
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(os.path.join(args.save_path, 'chromedriver'), chrome_options=chrome_options)  
     
     for i in range(1, args.limit+1):
-        data = get_xiaozhuan_list_url(driver, args, folder_path, i)
+        data = get_xiaozhuan_img(driver, args, folder_path, i)
         dump_jsonl(data, os.path.join(folder_path, 'xiaozhuan.jsonl'))
 
     driver.close() # closing the webdriver 
