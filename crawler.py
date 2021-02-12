@@ -76,6 +76,7 @@ def sleep_test():
         time.sleep(5)
 
 def save_from_url(url, filename):
+    print(url)
     urllib.request.urlretrieve(url, filename)
 
 def dump_jsonl(data, output_path, append=True):

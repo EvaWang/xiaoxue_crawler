@@ -1,6 +1,7 @@
 import time
 from urllib.parse import urlparse, parse_qs, urlsplit
 import argparse
+import requests
 
 from selenium import webdriver 
 from selenium.webdriver.chrome.options import Options
@@ -14,6 +15,24 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
+
+def get_xiaozhuan_list(args, page):
+
+    url = f"{args.root_url}/CCDB/PageResult/PageResult"
+    payload= f'KaishuFreqCheck=false&KaishuFreqOrder=4000&FontCode=4&PaginalColNum=10&PaginalRowNum=5&ImageSize=5&PageTo={pageTo}'
+    headers = {
+    'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    kaiOrder_set = set()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    char_list = soup.find_all('td', class_ = 'CharList')
+    for char in char_list:
+        kaiOrder_set.add(int(char.a.text))
+
+    return  kaiOrder_set
 
 def get_xiaozhuan_img(driver, args, folder_path, kaiOrder):
 
@@ -73,10 +92,10 @@ def _parse_args():
     )
 
     parser.add_argument('-f','--font', type=str, required=False, help='font', default='xiaozhuan')
-    parser.add_argument('-l','--limit', type=int, required=False, help='limit', default=11101)
+    # parser.add_argument('-l','--limit', type=int, required=False, help='limit', default=11101)
     parser.add_argument('-s','--size', type=int, required=False, help='size', default=64)
     parser.add_argument('-p','--save_path', type=str, required=False, help='save_path', default='./')
-    parser.add_argument('-r','--root_url', type=str, required=False, help='root_url', default='https://xiaoxue.iis.sinica.edu.tw/')
+    parser.add_argument('-r','--root_url', type=str, required=False, help='root_url', default='https://xiaoxue.iis.sinica.edu.tw')
     parser.add_argument('-u','--target_url', type=str, required=False, help='target_url', default='https://xiaoxue.iis.sinica.edu.tw/xiaozhuan?kaiOrder=%d')
 
     args = parser.parse_args()
@@ -90,11 +109,17 @@ if __name__ == '__main__':
 
     folder_path = os.path.join(args.save_path, args.font)
     create_folder(folder_path)
-    driver = webdriver.Chrome(os.path.join(args.save_path, 'chromedriver'), chrome_options=chrome_options)  
-    
-    for i in range(1, args.limit+1):
-        data = get_xiaozhuan_img(driver, args, folder_path, i)
-        dump_jsonl(data, os.path.join(folder_path, 'xiaozhuan.jsonl'))
+    driver = webdriver.Chrome(os.path.join(args.save_path, 'chromedriver'), options=chrome_options)  
+
+    pageTo = 1
+    while pageTo<500:
+        kaiOrder_set = get_xiaozhuan_list(args, pageTo)
+        if len(kaiOrder_set)==0:
+            break
+        pageTo = pageTo+1
+        for char in kaiOrder_set:
+            data = get_xiaozhuan_img(driver, args, folder_path, char)
+            dump_jsonl(data, os.path.join(folder_path, 'xiaozhuan.jsonl'))
 
     driver.close() # closing the webdriver 
     print("Crawler done.")
