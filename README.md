@@ -49,3 +49,7 @@ https://xiaoxue.iis.sinica.edu.tw/xiaozhuan?kaiOrder=1
         ![image](./readme_img/886_3.png)
         
 
+## requirement
+
+pip install selenium
+
