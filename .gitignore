@@ -107,3 +107,5 @@ xiaozhuan*
 chromedriver_linux64.zip
 chromedriver
 .vscode/settings.json
+
+*.pdf
